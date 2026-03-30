@@ -262,6 +262,33 @@ def remove_bg(src: Path, dest: Path) -> Path:
         alpha_matting_background_threshold=5,    # lower = less aggressive bg cut
         alpha_matting_erode_size=8,              # smaller = preserve more edge
     )
+
+    # Validate rembg output — if it removed almost everything or produced
+    # an extremely dark/blank image, fall back to the original to avoid
+    # producing black images in the pipeline.
+    try:
+        from io import BytesIO
+        im = Image.open(BytesIO(out)).convert("RGBA")
+        a = np.array(im.split()[-1])  # alpha channel
+        non_transparent = (a > 8).sum()
+        total = a.size
+        if total == 0:
+            raise ValueError("empty image")
+        if non_transparent / total < 0.05:
+            print("  [WARN] rembg removed almost everything — keeping original")
+            shutil.copy(src, dest)
+            return dest
+
+        # Also check overall brightness — if image is nearly black, treat as failure
+        rgb = np.array(im.convert("L"))
+        mean_brightness = float(rgb.mean())
+        if mean_brightness < 6.0:
+            print("  [WARN] rembg output is very dark (mean brightness {:.1f}) — keeping original".format(mean_brightness))
+            shutil.copy(src, dest)
+            return dest
+    except Exception as e:
+        print(f"  [WARN] Failed to validate rembg output: {e}")
+
     dest.write_bytes(out)
     return dest
 
