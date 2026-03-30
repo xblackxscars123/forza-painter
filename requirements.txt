@@ -1,0 +1,8 @@
+# Image prep pipeline dependencies
+# Install with:  pip install -r requirements.txt
+
+Pillow>=10.0.0          # Image I/O, crop, convert
+requests>=2.31.0        # URL downloading
+rembg>=2.0.50           # Background removal (U2Net)
+pyoxipng>=9.0.0         # Lossless PNG optimization (replaces RIOT)
+opencv-python>=4.8.0    # Quality check (blur detection)
