@@ -350,12 +350,14 @@ def process(source: str, output_dir: Path, args: argparse.Namespace, out_stem: s
             upscaled = tmp / f"{stem}_upscaled.png"
             upscale(png_in, upscaled, scale=args.scale, exe=args.waifu2x)
 
-        # 5. Remove background (optional)
-        if getattr(args, "no_remove_bg", False):
-            no_bg = upscaled
-        else:
+        # 5. Remove background (optional; disabled by default)
+        # Use --remove-bg to enable removal. If both flags are present,
+        # explicit --remove-bg takes precedence.
+        if getattr(args, "remove_bg", False):
             no_bg = tmp / f"{stem}_nobg.png"
             remove_bg(upscaled, no_bg)
+        else:
+            no_bg = upscaled
 
         # 6. Autocrop
         cropped = tmp / f"{stem}_cropped.png"
@@ -429,6 +431,9 @@ def launch_gui(args: argparse.Namespace):
     skip_lq_var = tk.BooleanVar()
     tk.Checkbutton(frm_opts, text="Skip low-quality", variable=skip_lq_var).pack(side="left", padx=6)
 
+    remove_bg_var = tk.BooleanVar(value=getattr(args, "remove_bg", False))
+    tk.Checkbutton(frm_opts, text="Remove background", variable=remove_bg_var).pack(side="left", padx=6)
+
     tk.Label(frm_opts, text="Scale:").pack(side="left", padx=(10, 2))
     scale_var = tk.IntVar(value=2)
     ttk.Combobox(frm_opts, textvariable=scale_var, values=[2, 4, 8, 16, 32],
@@ -481,7 +486,7 @@ def launch_gui(args: argparse.Namespace):
             skip_low_quality=skip_lq_var.get(),
             margin=args.margin,
             optimize_passes=passes_var.get(),
-            no_remove_bg=getattr(args, "no_remove_bg", False),
+            remove_bg=remove_bg_var.get(),
             suffix=getattr(args, "suffix", ""),
         )
         out = Path(out_var.get())
@@ -542,8 +547,10 @@ def main():
                         help="Number of oxipng optimization passes (default: 3)")
     parser.add_argument("--prefix", metavar="PREFIX",
                         help="Output filename prefix + index instead of source name (e.g. 'run2-' → run2-1.png, run2-2.png…)")
+    parser.add_argument("--remove-bg", dest="remove_bg", action="store_true",
+                        help="Enable background removal step (use rembg)")
     parser.add_argument("--no-remove-bg", dest="no_remove_bg", action="store_true",
-                        help="Skip background removal step")
+                        help="(Deprecated) Skip background removal (kept for compatibility)")
     parser.add_argument("--suffix", metavar="SUFFIX", default="",
                         help="Append text to output filenames, e.g. '_raw' → image_raw.png")
 
