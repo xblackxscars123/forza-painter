@@ -1,0 +1,38 @@
+{
+	"name": "imagemin-advpng",
+	"version": "6.0.0",
+	"description": "AdvPNG imagemin plugin",
+	"license": "MIT",
+	"repository": "imagemin/imagemin-advpng",
+	"engines": {
+		"node": ">=10"
+	},
+	"scripts": {
+		"test": "xo && ava"
+	},
+	"files": [
+		"index.js"
+	],
+	"keywords": [
+		"advpng",
+		"compress",
+		"gulpplugin",
+		"image",
+		"imageminplugin",
+		"img",
+		"minify",
+		"optimize",
+		"png"
+	],
+	"dependencies": {
+		"advpng-bin": "^5.0.0",
+		"exec-buffer": "^3.2.0",
+		"is-png": "^2.0.0",
+		"tempfile": "^3.0.0"
+	},
+	"devDependencies": {
+		"ava": "^3.8.0",
+		"imagemin-advpng": "^6.0.0",
+		"xo": "^0.30.0"
+	}
+}
